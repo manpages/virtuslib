@@ -151,6 +151,24 @@ def get_topic(n,m,page):
             mess += str(container)
     return mess
 
+##
+## login and post to a forum
+##
+
+#
+# login(usr, pwd) -> session
+#
+def login(user, password):
+    session = requests.Session()
+    url = base_url() + '/auth/'
+    session.get(url)
+    #headers = {'cookie': req.headers['set-cookie'], 'referer': 'http://virtus.pro/auth/'}
+    payload = {'AUTH_FORM': 'Y', 'TYPE': 'AUTH', 'backurl': '/auth/', 'USER_LOGIN': user, 'USER_PASSWORD': password}
+    req = session.post(url + '?login=yes', data=payload)
+    print(req.text)
+    return session
+
+
 if __name__ == "__main__":
     oldcode = """
     html = (requests.get("http://virtus.pro/participate/forum/group5/")).text
@@ -172,4 +190,4 @@ if __name__ == "__main__":
     #print(get_forum(44))
     #print(get_topic(44,323,5))
     #print(get_news())
-    print(get_calendar())
+    #print(get_calendar())
