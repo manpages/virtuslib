@@ -70,7 +70,7 @@ def get_ajax_api_response(path):
     return (requests.get(url)).text
 
 def get_news():
-    return get_ajax_api_response('/reports_list.php?active=Y&active_elems=active&TM_NAME=&GAME=23677&from=&to=')
+    return get_ajax_api_response('/index_news_list.php?game_news=23677&hot_news=0')
 
 def get_streams():
     done = False
@@ -125,7 +125,7 @@ def get_calendar():
 
 
 def get_reports():
-    return get_ajax_api_response('/index_news_list.php?game_news=23677&hot_news=0')
+    return get_ajax_api_response('/reports_list.php?active=Y&active_elems=active&TM_NAME=&GAME=23677&from=&to=')
 
 def get_forum_group(n):
     html = (requests.get(base_url() + forum_path() + "/group" + str(n) + "/")).text
