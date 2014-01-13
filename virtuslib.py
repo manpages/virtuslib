@@ -164,7 +164,27 @@ def login(user, password):
     session.get(url)
     #headers = {'cookie': req.headers['set-cookie'], 'referer': 'http://virtus.pro/auth/'}
     payload = {'AUTH_FORM': 'Y', 'TYPE': 'AUTH', 'backurl': '/auth/', 'USER_LOGIN': user, 'USER_PASSWORD': password}
-    req = session.post(url + '?login=yes', data=payload)
+    session.post(url + '?login=yes', data=payload)
+    return session
+
+def forum_post(session, forum, topic, text):
+    url = base_url() + forum_path() + '/forum' + str(forum) + '/topic' + str(topic)
+    req = (session.get(url)).text
+    session_field="'bitrix_sessid':'"
+    session_len=len('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    x = req.find(session_field)+len(session_field)
+    forum_session = req[x:x+session_len]
+    payload = {'PAGE_NAME': 'read', 'FID': forum, 'TID': topic, 'MESSAGE_TYPE': 'REPLY', 'AUTHOR_ID': '',
+               'forum_post_action': 'save', 'MESSAGE_MODE': 'normal', 'jsObjName': 'oLHE', 
+               'sessid': forum_session, 
+               'autosave_id': '251d258606ce5ab6832674c4bcf533db6',
+               'POST_MESSAGE': text,
+               'hidden_focus': '',
+               'USE_SMILES': 'N'}
+    req = session.post(base_url() + forum_path() + '/forum' + str(forum) +
+                                                   '/topic' + str(topic) +
+                                                   '/#postform',
+                       files=None, data=payload)
     print(req.text)
     return session
 
@@ -191,3 +211,4 @@ if __name__ == "__main__":
     #print(get_topic(44,323,5))
     #print(get_news())
     #print(get_calendar())
+    forum_post(login('user', 'password'), 44, 323, 'Привет из консоли!')
