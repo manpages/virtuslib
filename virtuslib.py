@@ -76,7 +76,15 @@ def get_ajax_api_response(path):
     return (requests.get(url)).text
 
 def get_news():
-    return get_ajax_api_response('/index_news_list.php?game_news=23677&hot_news=0')
+    soup = BeautifulSoup(get_ajax_api_response('/index_news_list.php?game_news=23677&hot_news=0'))
+    def is_headline(a):
+        if a.get('class') == ['vp-news-header']:
+            return True
+        else:
+            return False
+    def to_object(a):
+        return {'url': base_url() + a.get('href'), 'headline': a.string}
+    return map(to_object, filter(is_headline, soup.find_all('a')))
 
 def get_streams():
     done = False
@@ -232,8 +240,9 @@ def forum_post(session, forum, topic, text):
 if __name__ == "__main__":
     #for forum in get_forum_group('5'):
     #    print(forum)
-    for topic in get_forum(44):
-        print(topic)
-    #print(get_news())
+    #for topic in get_forum(44):
+    #    print(topic)
+    for headline in get_news():
+        print(headline)
     #print(get_calendar())
     #forum_post(login('user', 'password'), 44, 323, 'Привет из консоли!')
