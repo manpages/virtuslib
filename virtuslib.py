@@ -122,8 +122,8 @@ def get_streams():
 def get_calendar():
     page = 1
     resp = get_ajax_api_response('/calendar_list.php?page=' + str(page))
-    buff = '<ul id="calendar">'
     sc2thumb = '/bitrix/cache/s1/virtus/image.show/19w_19h_clipBOTH/upload/iblock/0df/sc2_39x39.png'
+    buff = []
     def is_starcraft_event(event):
         if event['game'] == sc2thumb:
             return True
@@ -137,9 +137,11 @@ def get_calendar():
         page += 1
         for event in data['items']:
             if is_starcraft_event(event):
-                buff += '<li>' + event['date'] + event['name'] + '</li>'
+                time = str_between(event['date'], 'time">', '</span>')
+                date = str_between(event['date'], 'date">', '</span>')
+                buff.append({'event': event['name'], 'date': date, 'time': time})
         resp = get_ajax_api_response('calendar_list.php?page=' + str(page))
-    return buff + '</ul>'
+    return buff
 
 
 def get_reports():
@@ -248,7 +250,8 @@ if __name__ == "__main__":
     #    print(topic)
     #for headline in get_news():
     #    print(headline)
-    for stream in get_streams():
-        print(stream)
-    #print(get_calendar())
+    #for stream in get_streams():
+    #    print(stream)
+    for event in get_calendar():
+        print(event)
     #forum_post(login('user', 'password'), 44, 323, 'Привет из консоли!')
