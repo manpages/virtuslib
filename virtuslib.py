@@ -157,12 +157,25 @@ def get_forum_group(n):
             return {'user': user, 'topic': topic}
         return(dict(get_info(div), last=(get_last(div))))
     return map(to_object, filter(is_forum,
-                          find_first(BeautifulSoup(html), 'div', 'class', ['forums']).find_all('div')))
+                                 find_first(BeautifulSoup(html), 'div', 'class', ['forums']).find_all('div')))
 
 def get_forum(n):
     html = (requests.get(base_url() + forum_path() + "/forum" + str(n) + "/")).text
-    soup = BeautifulSoup(html)
-    return find_first(soup, 'div', 'class', ['forums'])
+    def is_topic(div):
+        if div.get('class') == ['forum']:
+            return True
+        else:
+            return False
+    def to_object(div):
+        seek_for = '/topic'
+        div = find_first(div, 'div', 'class', ['info'])
+        a = div.find('a')
+        name = a.string
+        topic = str_between(a.get('href'), seek_for, '/')
+        author = find_first(div, 'p', 'class', ['author']).find('a').string
+        return {'name': name, 'topic': topic, 'user': author}
+    return map(to_object, filter(is_topic,
+                                 find_first(BeautifulSoup(html), 'div', 'class', ['forums']).find_all('div')))
 
 def get_topic(n,m,page):
     html = (requests.get(base_url() + forum_path() + "/forum" + str(n) +
@@ -217,9 +230,10 @@ def forum_post(session, forum, topic, text):
 
 
 if __name__ == "__main__":
-    for forum in get_forum_group('5'):
-        print(forum)
-    #print(get_forum(44))
+    #for forum in get_forum_group('5'):
+    #    print(forum)
+    for topic in get_forum(44):
+        print(topic)
     #print(get_news())
     #print(get_calendar())
     #forum_post(login('user', 'password'), 44, 323, 'Привет из консоли!')
