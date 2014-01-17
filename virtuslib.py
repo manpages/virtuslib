@@ -196,14 +196,21 @@ def get_topic(n,m,page):
                                                      "/topic" + str(m) + 
                                                     "/?PAGEN_1=" + str(page))).text
     soup = BeautifulSoup(html)
-    mess = ''
+    buff = []
     for container in soup.find_all(['p', 'div']):
+        pp = {}
         c = container.get('class')
-        if c == ['name', 'mesLeft'] or c == ['theMessage', 'mesRight']:
-            # todo: replace links to user profiles with target _blank'ed
-            #       links to virtus.pro profile pages.
-            mess += str(container)
-    return mess
+        if c == ['name', 'mesLeft']: 
+            a = container.find('a')
+            name = a.string
+            user = str_between(a.get('href'), '/users/', '/')
+            pp = dict(pp, name=name, user=user)
+        if c == ['theMessage', 'mesRight']:
+            text = ''.join(container.find_all(text=True))
+            pp = dict(pp, post=text)
+        if pp != {}:
+            buff.append(pp)
+    return buff
 
 ##
 ## login and post to a forum
@@ -252,6 +259,8 @@ if __name__ == "__main__":
     #    print(headline)
     #for stream in get_streams():
     #    print(stream)
-    for event in get_calendar():
-        print(event)
+    #for event in get_calendar():
+    #    print(event)
     #forum_post(login('user', 'password'), 44, 323, 'Привет из консоли!')
+    for post in get_topic(44,323,11):
+        print(post)
