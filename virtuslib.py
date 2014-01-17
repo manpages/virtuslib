@@ -91,7 +91,7 @@ def get_streams():
     page = 0
     live = 0
     streams_per_page = 8
-    buff = '<ul id="streams">'
+    buff = []
     # 23677: game id of StarCraft II
     # 31238: some kind of weird magic number, no idea what does it do
     path = '/streams_list.php?active=Y&GAME=23677&TYPE=31238&PAGEN_1='
@@ -101,6 +101,10 @@ def get_streams():
                 for img in span.find_all('img'):
                     return True #uglyhack. Should be a better way to find an image in the span
                 return False #uglyhack. If the termination wasn't ended by find_all('img') return False
+    def to_object(li):
+        url = base_url() + '/' + li.find('a').get('href')
+        stream = find_first(li, 'span', 'title', '').string
+        return {'stream': stream, 'url': url}
     while not(done):
         page += 1
         soup = BeautifulSoup(get_ajax_api_response(path + str(page)))
@@ -108,12 +112,12 @@ def get_streams():
         for li in soup.find_all('li'):
             if is_live(li):
                 live += 1
-                buff += str(li)
+                buff.append(to_object(li))
         if live == streams_per_page:
             live = 0
         else:
             done = True
-    return buff + '</ul>'
+    return buff
 
 def get_calendar():
     page = 1
@@ -242,7 +246,9 @@ if __name__ == "__main__":
     #    print(forum)
     #for topic in get_forum(44):
     #    print(topic)
-    for headline in get_news():
-        print(headline)
+    #for headline in get_news():
+    #    print(headline)
+    for stream in get_streams():
+        print(stream)
     #print(get_calendar())
     #forum_post(login('user', 'password'), 44, 323, 'Привет из консоли!')
