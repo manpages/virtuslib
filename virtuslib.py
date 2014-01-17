@@ -48,6 +48,12 @@ def find_first(soup, element, attribute, value):
             return e
     return false
 
+def str_between(s, left_needle, right_needle):
+    seek0 = s.find(left_needle) + len(left_needle)
+    s = s[seek0:]
+    seek1 = s.find(right_needle)
+    return s[:seek1]
+
 ##
 ## "constants"
 ##
@@ -129,8 +135,29 @@ def get_reports():
 
 def get_forum_group(n):
     html = (requests.get(base_url() + forum_path() + "/group" + str(n) + "/")).text
-    soup = BeautifulSoup(html)
-    return find_first(soup, 'div', 'class', ['forums'])
+    def is_forum(div):
+        if div.get('class') == ['forum']:
+            return True
+        else:
+            return False
+    def to_object(div):
+        def get_info(div):
+            seek_for = '/forum/forum'
+            div = find_first(div, 'div', 'class', ['info'])
+            a = find_first(div, 'p', 'class', ['name']).find('a')
+            name = a.string
+            forum = str_between(a.get('href'), seek_for, '/')
+            return {'name': name, 'forum': forum}
+        def get_last(div):
+            seek_for = '/topic'
+            div = find_first(div, 'div', 'class', ['last'])
+            a = find_first(div, 'p', 'class', ['name']).find('a')
+            user = a.string
+            topic = str_between(a.get('href'), seek_for, '/')
+            return {'user': user, 'topic': topic}
+        return(dict(get_info(div), last=(get_last(div))))
+    return map(to_object, filter(is_forum,
+                          find_first(BeautifulSoup(html), 'div', 'class', ['forums']).find_all('div')))
 
 def get_forum(n):
     html = (requests.get(base_url() + forum_path() + "/forum" + str(n) + "/")).text
@@ -190,25 +217,9 @@ def forum_post(session, forum, topic, text):
 
 
 if __name__ == "__main__":
-    oldcode = """
-    html = (requests.get("http://virtus.pro/participate/forum/group5/")).text
-    soup = BeautifulSoup(html)
-    match = ''
-    for div in soup.find_all('div'):
-        if div.get('class') == ['forums']:
-            match = div
-            break
-    print(match)
-    """
-    print("""<!DOCTYPE html>
-    <header>
-        <meta charset="utf-8" />
-    </header>
-    """
-    )
-    #print(get_forum_group('5'))
+    for forum in get_forum_group('5'):
+        print(forum)
     #print(get_forum(44))
-    #print(get_topic(44,323,5))
     #print(get_news())
     #print(get_calendar())
-    forum_post(login('user', 'password'), 44, 323, 'Привет из консоли!')
+    #forum_post(login('user', 'password'), 44, 323, 'Привет из консоли!')
